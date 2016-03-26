@@ -6,8 +6,6 @@
 #include "qatemconnection.h"
 #include "qatemmixeffect.h"
 
-#define TASKS 2
-
 control::control(std::shared_ptr<kDevice> devc)
 {
 	dev = devc;
@@ -43,7 +41,6 @@ void control::doTasks(void)
 		if (ti->isConnected())
 			incrementalProgress();
 	}
-
 }
 
 void control::mwwConnect(void)
@@ -100,10 +97,12 @@ void control::atmConnected(atemId id)
 {
 	std::shared_ptr<QAtemConnection> ti = bmd.at(id);
 
-	QAtemMixEffect *me = ti->mixEffect(0);
-	connect(me, &QAtemMixEffect::programInputChanged, this, SLOT(updateProgramInput(quint8,quint16,quint16)));
-	connect(me, SIGNAL(previewInputChanged(quint8,quint16,quint16)), this, SLOT(updatePreviewInput(quint8,quint16,quint16)));
-
+	QAtemMixEffect *ame = ti->mixEffect(0);
+	if(me)
+	{
+		connect(ame, &QAtemMixEffect::programInputChanged, [=](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmProgramInputChanged(id, me, oldIndex, newIndex); });
+		connect(ame, &QAtemMixEffect::previewInputChanged, [=](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmPreviewInputChanged(id, me, oldIndex, newIndex); });
+	}
 	qDebug() << "Connected " << id;
 }
 
@@ -121,7 +120,6 @@ void control::atmPreviewInputChanged(atemId id, quint8 me, quint16 oldIndex, qui
 {
 	qDebug() << "pgm ch " << id << " me " << me << " oldIndex " << oldIndex << " newIndex " << newIndex;
 }
-
 
 
 void control::iconnect(void)
@@ -169,5 +167,5 @@ void control::iconnect(void)
 
 void control::incrementalProgress(void)
 {
-	emit mwwProgress((100/TASKS)*(++tasks));
+	emit mwwProgress((100/totalTasks)*(++tasks));
 }

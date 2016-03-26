@@ -24,8 +24,12 @@ void control::doTasks(void)
 {
 	iconnect();
 
+	totalTasks = 1 + settings.value(QString("atem/count"), 1).toInt();
+
 	QSettings settings;
 	int x = 0;
+
+
 	for (std::vector<std::shared_ptr<QAtemConnection>>::const_iterator it = bmd.begin(); it != bmd.end(); ++it, ++x)
 	{
 		std::shared_ptr<QAtemConnection> ti = *it;
@@ -92,6 +96,12 @@ void control::devJoystickMove(joystick_t data)
 
 void control::atmConnected(atemId id)
 {
+	std::shared_ptr<QAtemConnection> ti = bmd.at(id);
+
+	QAtemMixEffect *me = ti->mixEffect(0);
+	connect(me, &QAtemMixEffect::programInputChanged, this, SLOT(updateProgramInput(quint8,quint16,quint16)));
+	connect(me, SIGNAL(previewInputChanged(quint8,quint16,quint16)), this, SLOT(updatePreviewInput(quint8,quint16,quint16)));
+
 	qDebug() << "Connected " << id;
 }
 

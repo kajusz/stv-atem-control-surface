@@ -16,5 +16,5 @@ win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../serial/release/ -ls
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../serial/debug/ -lserial -ladvapi32 -lsetupapi
 else:unix: LIBS += -L$$OUT_PWD/../serial/ -lserial
 
-INCLUDEPATH += $$PWD/../serial
-DEPENDPATH += $$PWD/../serial
+INCLUDEPATH += $$PWD/../serial/include
+DEPENDPATH += $$PWD/../serial/include

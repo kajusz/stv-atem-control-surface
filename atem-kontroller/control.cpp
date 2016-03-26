@@ -3,6 +3,9 @@
 #include <QSettings>
 #include <QtDebug>
 
+#include "qatemconnection.h"
+#include "qatemmixeffect.h"
+
 #define TASKS 2
 
 control::control(std::shared_ptr<kDevice> devc)
@@ -24,11 +27,10 @@ void control::doTasks(void)
 {
 	iconnect();
 
+	QSettings settings;
 	totalTasks = 1 + settings.value(QString("atem/count"), 1).toInt();
 
-	QSettings settings;
 	int x = 0;
-
 
 	for (std::vector<std::shared_ptr<QAtemConnection>>::const_iterator it = bmd.begin(); it != bmd.end(); ++it, ++x)
 	{

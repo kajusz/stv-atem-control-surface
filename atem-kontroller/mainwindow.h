@@ -4,7 +4,8 @@
 #include <QMainWindow>
 
 #include "kdevice.h"
-#include <memory>
+
+#include "libatem.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,18 +25,22 @@ signals:
 	void ctlReconnect(void);
 
 public slots:
+	// slots for the kdevice class
 	void devInfo(int8_t id, QString what);
 	void devBtnScreenKeyDown(uint8_t keyNum);
 	void devBtnScreenKeyUp(uint8_t keyNum);
 
+	// slots for the control class
 	void ctlManuallyConnect(void);
 	void ctlProgress(unsigned int value);
 	void ctlReady(void);
 	void ctlStop(QString reason);
 
 private:
+	// qt designer object
 	Ui::MainWindow *ui;
 
+	// reference to the kontroller
 	std::shared_ptr<kDevice> dev;
 };
 

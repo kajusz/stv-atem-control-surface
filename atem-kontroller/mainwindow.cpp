@@ -18,11 +18,13 @@ MainWindow::~MainWindow()
 void MainWindow::linkDev(std::shared_ptr<kDevice> devc)
 {
 	dev = devc;
+	connect(dev.get(), &kDevice::sigInfo, this, &MainWindow::devInfo);
+	connect(dev.get(), &kDevice::sigBtnScreenKeyDown, this, &MainWindow::devBtnScreenKeyDown);
 }
 
 void MainWindow::devInfo(int8_t id, QString what)
 {
-//	ui->p0text->append("kDevice: " << id << ": " << what);
+	ui->p0text->append(QString("kDevice: %1: %2").arg(id).arg(what));
 }
 
 void MainWindow::devBtnScreenKeyDown(uint8_t keyNum)

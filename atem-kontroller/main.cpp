@@ -5,6 +5,8 @@
 
 #include "control.h"
 
+#include "libatem.h"
+
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
@@ -16,35 +18,34 @@ int main(int argc, char *argv[])
 	QCoreApplication::setOrganizationDomain("kajusz.me");
 	QCoreApplication::setApplicationName("atem-kontroller");
 
+	// create kontroller object
 	std::shared_ptr<kDevice> d(new kDevice);
-	std::shared_ptr<QAtemConnection> atem(new QAtemConnection);
 
+	// setup signals & slots, kdevice and mainwindow
 	w.linkDev(d);
-	control c(d);
-	c.registerAtem(atem);
 
+	// create control object, setup signals & slots
+	control c(d);
+
+	// setup signals & slots, control and mainwindow
 	QObject::connect(&c, &control::mwwManuallyConnect, &w, &MainWindow::ctlManuallyConnect);
 	QObject::connect(&c, &control::mwwProgress, &w, &MainWindow::ctlProgress);
 	QObject::connect(&c, &control::mwwReady, &w, &MainWindow::ctlReady);
 	QObject::connect(&c, &control::mwwStop, &w, &MainWindow::ctlStop);
 	QObject::connect(&w, &MainWindow::ctlReconnect, &c, &control::mwwConnect);
 
-	QObject::connect(d.get(), &kDevice::sigConnected, &c, &control::devConnected);
-	QObject::connect(d.get(), &kDevice::sigDisconnected, &c, &control::devDisconnected);
-//	QObject::connect(d.get(), &kDevice::sigBtnCommandKeyDown, &c, &control::devBtnCommandKeyDown);
-	QObject::connect(d.get(), &kDevice::sigBtnCommandKeyUp, &c, &control::devBtnCommandKeyUp);
-//	QObject::connect(d.get(), &kDevice::sigBtnGroupKeyDown, &c, &control::devBtnGroupKeyDown);
-	QObject::connect(d.get(), &kDevice::sigBtnGroupKeyUp, &c, &control::devBtnGroupKeyUp);
-	QObject::connect(d.get(), &kDevice::sigTBarMove, &c, &control::devTBarMove);
-	QObject::connect(d.get(), &kDevice::sigEncMove, &c, &control::devEncMove);
-	QObject::connect(d.get(), &kDevice::sigJoystickMove, &c, &control::devJoystickMove);
+	// create atem objects
+	QSettings settings;
+	for (int i = 0; i < settings.value(QString("atem/count"), 1).toInt(); ++i)
+	{
+		atemPtr atem(new QAtemConnection);
+		c.registerAtem(atem);
+	}
 
 //	void sigBtnKeyboardKeyDown(uint8_t rawCode);
 //	void sigBtnKeyboardKeyUp(uint8_t rawCode);
 
-	QObject::connect(d.get(), &kDevice::sigInfo, &w, &MainWindow::devInfo);
-	QObject::connect(d.get(), &kDevice::sigBtnScreenKeyDown, &w, &MainWindow::devBtnScreenKeyDown);
-
+	// connect to objects
 	c.doTasks();
 
 	return a.exec();

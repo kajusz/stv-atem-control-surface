@@ -3,36 +3,40 @@
 #include <QSettings>
 #include <QtDebug>
 
-#include "qatemconnection.h"
 #include "qatemmixeffect.h"
 
 control::control(std::shared_ptr<kDevice> devc)
 {
 	dev = devc;
-
+	connect(dev.get(), &kDevice::sigConnected, this, &control::devConnected);
+	connect(dev.get(), &kDevice::sigDisconnected, this, &control::devDisconnected);
 }
 control::~control(void)
 {
-
+	for (atemVec::const_iterator it = bmd.begin(); it != bmd.end(); ++it)
+	{
+		atemPtr ti = *it;
+		ti->disconnectFromSwitcher();
+	}
 }
 
-void control::registerAtem(std::shared_ptr<QAtemConnection> atem)
+void control::registerAtem(atemPtr atem)
 {
 	bmd.push_back(atem);
 }
 
 void control::doTasks(void)
 {
-	iconnect();
+	// connect to kontroller
+	mwwConnect();
 
+	// connect to atems
 	QSettings settings;
 	totalTasks = 1 + settings.value(QString("atem/count"), 1).toInt();
-
 	int x = 0;
-
-	for (std::vector<std::shared_ptr<QAtemConnection>>::const_iterator it = bmd.begin(); it != bmd.end(); ++it, ++x)
+	for (atemVec::const_iterator it = bmd.begin(); it != bmd.end(); ++it, ++x)
 	{
-		std::shared_ptr<QAtemConnection> ti = *it;
+		atemPtr ti = *it;
 
 		connect(ti.get(), &QAtemConnection::connected, [=]() { this->atmConnected(x); });
 		connect(ti.get(), &QAtemConnection::disconnected, [=]() { this->atmDisconnected(x); });
@@ -44,85 +48,6 @@ void control::doTasks(void)
 }
 
 void control::mwwConnect(void)
-{
-	iconnect();
-}
-
-void control::devConnected(void)
-{
-	incrementalProgress();
-}
-
-void control::devDisconnected(void)
-{
-
-}
-
-void control::devBtnCommandKeyDown(uint8_t keyNum)
-{
-	qDebug() << "CommandKeyD " << keyNum;
-}
-
-void control::devBtnCommandKeyUp(uint8_t keyNum)
-{
-	qDebug() << "CommandKeyU " << keyNum;
-}
-
-void control::devBtnGroupKeyDown(uint8_t gpId, uint8_t keyNum)
-{
-	qDebug() << "Group " << gpId << " KeyD " << keyNum;
-}
-
-void control::devBtnGroupKeyUp(uint8_t gpId, uint8_t keyNum)
-{
-	qDebug() << "Group " << gpId << " KeyU " << keyNum;
-}
-
-void control::devTBarMove(uint16_t pos)
-{
-	qDebug() << "TBar " << pos;
-}
-
-void control::devEncMove(uint8_t encId, int8_t data)
-{
-	qDebug() << "Enc " << encId << " " << data;
-}
-
-void control::devJoystickMove(joystick_t data)
-{
-	qDebug() << "Joystick x " << data.x << " y " << data.y << " z " << data.z;
-}
-
-void control::atmConnected(atemId id)
-{
-	std::shared_ptr<QAtemConnection> ti = bmd.at(id);
-
-	QAtemMixEffect *ame = ti->mixEffect(0);
-	if(me)
-	{
-		connect(ame, &QAtemMixEffect::programInputChanged, [=](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmProgramInputChanged(id, me, oldIndex, newIndex); });
-		connect(ame, &QAtemMixEffect::previewInputChanged, [=](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmPreviewInputChanged(id, me, oldIndex, newIndex); });
-	}
-	qDebug() << "Connected " << id;
-}
-
-void control::atmDisconnected(atemId id)
-{
-	qDebug() << "Disconnected " << id;
-}
-
-void control::atmProgramInputChanged(atemId id, quint8 me, quint16 oldIndex, quint16 newIndex)
-{
-	qDebug() << "pgm ch " << id << " me " << me << " oldIndex " << oldIndex << " newIndex " << newIndex;
-}
-
-void control::atmPreviewInputChanged(atemId id, quint8 me, quint16 oldIndex, quint16 newIndex)
-{
-	qDebug() << "pgm ch " << id << " me " << me << " oldIndex " << oldIndex << " newIndex " << newIndex;
-}
-
-
-void control::iconnect(void)
 {
 	QSettings settings;
 
@@ -165,7 +90,94 @@ void control::iconnect(void)
 	}
 }
 
+void control::devConnected(void)
+{
+//	connect(dev.get(), &kDevice::sigBtnCommandKeyDown, this, &control::devBtnCommandKeyDown);
+	connect(dev.get(), &kDevice::sigBtnCommandKeyUp, this, &control::devBtnCommandKeyUp);
+//	connect(dev.get(), &kDevice::sigBtnGroupKeyDown, this, &control::devBtnGroupKeyDown);
+	connect(dev.get(), &kDevice::sigBtnGroupKeyUp, this, &control::devBtnGroupKeyUp);
+	connect(dev.get(), &kDevice::sigTBarMove, this, &control::devTBarMove);
+	connect(dev.get(), &kDevice::sigEncMove, this, &control::devEncMove);
+	connect(dev.get(), &kDevice::sigJoystickMove, this, &control::devJoystickMove);
+
+	incrementalProgress();
+}
+
+void control::devDisconnected(void)
+{
+	emit mwwStop("control: kontroller disconnected");
+}
+
+void control::devBtnCommandKeyDown(uint8_t keyNum)
+{
+	qDebug() << "CommandKeyD " << keyNum;
+}
+
+void control::devBtnCommandKeyUp(uint8_t keyNum)
+{
+	qDebug() << "CommandKeyU " << keyNum;
+}
+
+void control::devBtnGroupKeyDown(uint8_t gpId, uint8_t keyNum)
+{
+	qDebug() << "Group " << gpId << " KeyD " << keyNum;
+}
+
+void control::devBtnGroupKeyUp(uint8_t gpId, uint8_t keyNum)
+{
+	qDebug() << "Group " << gpId << " KeyU " << keyNum;
+}
+
+void control::devTBarMove(uint16_t pos)
+{
+	qDebug() << "TBar " << pos;
+}
+
+void control::devEncMove(uint8_t encId, int8_t data)
+{
+	qDebug() << "Enc " << encId << " " << data;
+}
+
+void control::devJoystickMove(joystick_t data)
+{
+	qDebug() << "Joystick x " << data.x << " y " << data.y << " z " << data.z;
+}
+
+void control::atmConnected(atemId id)
+{
+	QAtemMixEffect *ame = bmd.at(id)->mixEffect(0);
+
+	if(ame)
+	{
+		connect(ame, &QAtemMixEffect::programInputChanged, [=](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmProgramInputChanged(id, me, oldIndex, newIndex); });
+		connect(ame, &QAtemMixEffect::previewInputChanged, [=](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmPreviewInputChanged(id, me, oldIndex, newIndex); });
+	}
+
+	incrementalProgress();
+}
+
+void control::atmDisconnected(atemId id)
+{
+	emit mwwStop(QString("control: atem %1 disconnected").arg(id));
+}
+
+void control::atmProgramInputChanged(atemId id, quint8 me, quint16 oldIndex, quint16 newIndex)
+{
+	qDebug() << "pgm ch " << id << " me " << me << " oldIndex " << oldIndex << " newIndex " << newIndex;
+}
+
+void control::atmPreviewInputChanged(atemId id, quint8 me, quint16 oldIndex, quint16 newIndex)
+{
+	qDebug() << "pgm ch " << id << " me " << me << " oldIndex " << oldIndex << " newIndex " << newIndex;
+}
+
 void control::incrementalProgress(void)
 {
-	emit mwwProgress((100/totalTasks)*(++tasks));
+	float val = (100/totalTasks)*(++tasks);
+	if (val == 100)
+	{
+		emit mwwReady();
+	}
+	else
+		emit mwwProgress(val);
 }

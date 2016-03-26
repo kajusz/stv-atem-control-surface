@@ -8,11 +8,11 @@ TEMPLATE = app
 SOURCES += \
 		main.cpp \
 		mainwindow.cpp \
-    control.cpp
+		control.cpp
 
 HEADERS += mainwindow.h \
-    defns.h \
-    control.h
+		control.h \
+		libatem.h
 
 FORMS += mainwindow.ui
 

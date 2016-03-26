@@ -1,3 +1,6 @@
 [submodule "libqatemcontrol"]
 	path = libqatemcontrol
 	url = https://github.com/petersimonsson/libqatemcontrol
+[submodule "serial"]
+	path = serial
+	url = https://github.com/wjwwood/serial

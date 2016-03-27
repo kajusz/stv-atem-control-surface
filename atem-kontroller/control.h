@@ -42,6 +42,11 @@ public slots:
 	void atmDisconnected(atemId id); // event, atem was connected
 	void atmProgramInputChanged(atemId id, quint8 me, quint16 oldIndex, quint16 newIndex);
 	void atmPreviewInputChanged(atemId id, quint8 me, quint16 oldIndex, quint16 newIndex);
+	void atmTransitionPreviewChanged(atemId id, quint8 me, bool state);
+	void atmFadeToBlackChanged(atemId id, quint8 me, bool fading, bool enabled);
+	void atmCurrentTransitionStyleChanged(atemId id, quint8 me, quint8 style);
+	void atmKeyersOnCurrentTransitionChanged(atemId id, quint8 me, quint8 keyers);
+	void atmUpstreamKeyOnAirChanged(atemId id, quint8 me, quint8 keyer, bool state);
 
 private:
 	// initialisation progress counter

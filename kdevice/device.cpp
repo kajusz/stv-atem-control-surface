@@ -145,9 +145,11 @@ void kDevice::tLed(const uint8_t& led, const rgbf& colour)
 	// obviously check if it's open
 	assert(port->isOpen());
 
+	ledCols[led] = colour;
+
 	// convert our arbitrary rgbf to simple tri-state colour + off + flash
 	uint8_t ledCol = 0;
-	if (colour.r > 192 && colour.g > 128 && colour.g < 192 && colour.b < 32)
+	if (colour.r > 192 && ((colour.g > 128 && colour.g < 192) || colour.g == 255) && colour.b < 32)
 		ledCol = 4; // orange
 	else if (colour.r > 192 && colour.g < 32 && colour.b < 32)
 		ledCol = 6; // red
@@ -162,6 +164,12 @@ void kDevice::tLed(const uint8_t& led, const rgbf& colour)
 	uint8_t y = 128 + (led & 63);
 
 	msgWrite(17, x, y)
+}
+
+void kDevice::setLeds(const uint8_t& start, const uint8_t& end, const rgbf& colour)
+{
+	for (int i = start; i < end; ++i)
+		tLed(i, colour);
 }
 
 void kDevice::checkSerialData()
@@ -377,12 +385,12 @@ void kDevice::filterKeyEvt(uint8_t keyNum, keyState state)
 	case 30:
 	case 31: this->btnKeyboardKey(keyNum, state); break;
 		// sequence keys
-	case 32:
-	case 33:
-	case 34:
-	case 35:
-	case 36:
-	case 37:
+	case 32: // play/pause
+	case 33: // prev
+	case 34: // insert
+	case 35: // set
+	case 36: // delete
+	case 37: // next
 		// direct patt
 	case 38: this->btnCommandKey(keyNum, state); break;
 		// status
@@ -393,25 +401,24 @@ void kDevice::filterKeyEvt(uint8_t keyNum, keyState state)
 	case 43:
 	case 44: this->btnKeyboardKey(keyNum, state); break;
 		// key
-	case 45:
-	case 46:
-	case 47:
-	case 48:
-	case 49:
-	case 50:
+	case 45: // edge
+	case 46: // shadow
+	case 47: // out line
+	case 48: // mask
+	case 49: // mask invert
+	case 50: // key invert
 		// key insert
-	case 51:
-	case 52:
-		// editor enable
-	case 53:
-		// key 1/2
-	case 54:
-	case 55:
+	case 51: // key bus
+	case 52: // matt
+		//
+	case 53: // editor enable
+	case 54: // key 1
+	case 55: // key 2
 		// key source
-	case 56:
-	case 57:
-	case 58:
-	case 59:
+	case 56: // key bus
+	case 57: // lum
+	case 58: // chroma key
+	case 59: // pst patt
 		// joystick keys
 	case 60: this->btnCommandKey(keyNum, state); break;
 	case 61:

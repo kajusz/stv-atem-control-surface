@@ -111,10 +111,13 @@ public:
 	void reset(void);
 	void close(void);
 
+	const rgbf& getLed(const uint8_t& led) { return ledCols[led]; }
+
 	const std::string getVersion(void) { return version; }
 
 public slots:
 	void setLed(const uint8_t& led, const rgbf& colour) { tLed(led, colour); }
+	void setLeds(const uint8_t& start, const uint8_t& end, const rgbf& colour);
 
 signals:
 	void sigInfo(int8_t id, QString what); // used for spittion out errors, @param - id number, @param - text
@@ -147,6 +150,8 @@ private:
 	QTimer *mTimer;
 
 	std::string version;
+
+	rgbf ledCols[143];
 
 	uint8_t buf[3];
 	bool modifierKey[3];

@@ -8,14 +8,19 @@
 
 #include "translate.h"
 
+// ctor
 control::control(std::shared_ptr<kDevice> devc)
 {
+	// setup signals and slots
 	dev = devc;
 	connect(dev.get(), &kDevice::sigConnected, this, &control::devConnected);
 	connect(dev.get(), &kDevice::sigDisconnected, this, &control::devDisconnected);
 }
+
+// dtor
 control::~control(void)
 {
+	// disconnect from all the switchers
 	for (atemVec::const_iterator it = bmd.begin(); it != bmd.end(); ++it)
 	{
 		atemPtr ti = *it;
@@ -23,11 +28,13 @@ control::~control(void)
 	}
 }
 
+// add atem object to the container
 void control::registerAtem(atemPtr atem)
 {
 	bmd.push_back(atem);
 }
 
+// initialise
 void control::doTasks(void)
 {
 	// connect to kontroller
@@ -41,8 +48,8 @@ void control::doTasks(void)
 	{
 		atemPtr ti = *it;
 
-		connect(ti.get(), &QAtemConnection::connected, [=]() { this->atmConnected(x); });
-		connect(ti.get(), &QAtemConnection::disconnected, [=]() { this->atmDisconnected(x); });
+		connect(ti.get(), &QAtemConnection::connected, [id, this]() { this->atmConnected(x); });
+		connect(ti.get(), &QAtemConnection::disconnected, [id, this]() { this->atmDisconnected(x); });
 
 		ti->connectToSwitcher(QHostAddress(settings.value(QString("atem/%1/ip").arg(x), "192.168.10.240").toString()));
 		if (ti->isConnected())
@@ -50,10 +57,10 @@ void control::doTasks(void)
 	}
 }
 
+// connect to kontroller
 void control::mwwConnect(void)
 {
 	QSettings settings;
-
 	if (settings.value("dev/kontroller", true).toBool())
 	{
 		std::vector<device_t> q = dev->getConfig();
@@ -62,7 +69,6 @@ void control::mwwConnect(void)
 
 		if (storedDevHid.compare("__INVALID__") == 0)
 		{
-			qDebug() << "First run";
 			emit mwwManuallyConnect();
 			return;
 		}
@@ -71,49 +77,39 @@ void control::mwwConnect(void)
 		device_t foundDeviceDevT;
 
 		for (std::vector<device_t>::iterator it = q.begin(); it != q.end(); ++it)
-			if (storedDevHid.compare(it->data) == 0)
-				if (storedDevName.compare(it->name) == 0)
-				{
-					foundDevice = true;
-					foundDeviceDevT = *it;
-					break;
-				}
+			if (storedDevHid.compare(it->data) == 0 && storedDevName.compare(it->name) == 0)
+			{
+				foundDevice = true;
+				foundDeviceDevT = *it;
+				break;
+			}
 
 		if (foundDevice)
 		{
-			qDebug() << "Attempting to connect";
 			dev->setConfig(foundDeviceDevT);
 			dev->begin();
 		}
 		else
-		{
-			qDebug() << "Failed to find saved device";
 			emit mwwManuallyConnect();
-		}
 	}
 }
 
+// setup signals and slots for device
 void control::devConnected(void)
 {
-//	connect(dev.get(), &kDevice::sigBtnCommandKeyDown, this, &control::devBtnCommandKeyDown);
 	connect(dev.get(), &kDevice::sigBtnCommandKeyUp, this, &control::devBtnCommandKeyUp);
-//	connect(dev.get(), &kDevice::sigBtnGroupKeyDown, this, &control::devBtnGroupKeyDown);
 	connect(dev.get(), &kDevice::sigBtnGroupKeyUp, this, &control::devBtnGroupKeyUp);
+
 	connect(dev.get(), &kDevice::sigTBarMove, this, &control::devTBarMove);
-	connect(dev.get(), &kDevice::sigEncMove, this, &control::devEncMove);
 	connect(dev.get(), &kDevice::sigJoystickMove, this, &control::devJoystickMove);
 
 	incrementalProgress();
 }
 
+// oh no
 void control::devDisconnected(void)
 {
 	emit mwwStop("control: kontroller disconnected");
-}
-
-void control::devBtnCommandKeyDown(uint8_t keyNum)
-{
-	qDebug() << "CommandKeyD " << keyNum;
 }
 
 void control::devBtnCommandKeyUp(uint8_t keyNum)
@@ -157,7 +153,7 @@ void control::devBtnCommandKeyUp(uint8_t keyNum)
 				// joystick keys
 			case 60: // lock/def
 			case 65: // sens hi/low
-
+				break;
 
 
 			case 119: ame->setUpstreamKeyOnNextTransition(0, !bitRead(ame->keyersOnNextTransition(), 1)); break;
@@ -188,18 +184,13 @@ void control::devBtnCommandKeyUp(uint8_t keyNum)
 			case 105: ame->setTransitionType(1); break; // dip
 			case 106: ame->setTransitionType(2); break; // wipe
 
-			case 126:
+			case 126: break;
 			case 125: ame->toggleFadeToBlack(); break;
 			case 124: ame->cut(); break;
 			case 123: ame->autoTransition(); break;
 		}
 	}
 	qDebug() << "CommandKeyU " << keyNum;
-}
-
-void control::devBtnGroupKeyDown(uint8_t gpId, uint8_t keyNum)
-{
-	qDebug() << "Group " << gpId << " KeyD " << keyNum;
 }
 
 void control::devBtnGroupKeyUp(uint8_t gpId, uint8_t keyNum)
@@ -229,11 +220,6 @@ void control::devTBarMove(uint16_t pos)
 	qDebug() << "TBar " << pos;
 }
 
-void control::devEncMove(uint8_t encId, int8_t data)
-{
-	qDebug() << "Enc " << encId << " " << data;
-}
-
 void control::devJoystickMove(joystick_t data)
 {
 	qDebug() << "Joystick x " << data.x << " y " << data.y << " z " << data.z;
@@ -246,14 +232,14 @@ void control::atmConnected(atemId id)
 
 	if (ame)
 	{
-		connect(ame, &QAtemMixEffect::programInputChanged, [=](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmProgramInputChanged(id, me, oldIndex, newIndex); });
-		connect(ame, &QAtemMixEffect::previewInputChanged, [=](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmPreviewInputChanged(id, me, oldIndex, newIndex); });
+		connect(ame, &QAtemMixEffect::programInputChanged, [id, this](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmProgramInputChanged(id, me, oldIndex, newIndex); });
+		connect(ame, &QAtemMixEffect::previewInputChanged, [id, this](quint8 me, quint16 oldIndex, quint16 newIndex) { this->atmPreviewInputChanged(id, me, oldIndex, newIndex); });
 
-		connect(ame, &QAtemMixEffect::transitionPreviewChanged, [=](quint8 me, bool state) { this->atmTransitionPreviewChanged(id, me, state); });
-		connect(ame, &QAtemMixEffect::fadeToBlackChanged, [=](quint8 me, bool fading, bool enabled) { this->atmFadeToBlackChanged(id, me, fading, enabled); });
-		connect(ame, &QAtemMixEffect::currentTransitionStyleChanged, [=](quint8 me, quint8 style) { this->atmCurrentTransitionStyleChanged(id, me, style); });
-		connect(ame, &QAtemMixEffect::keyersOnCurrentTransitionChanged, [=](quint8 me, quint8 keyers) { this->atmKeyersOnCurrentTransitionChanged(id, me, keyers); });
-		connect(ame, &QAtemMixEffect::upstreamKeyOnAirChanged, [=](quint8 me, quint8 keyer, bool state) { this->atmUpstreamKeyOnAirChanged(id, me, keyer, state); });
+		connect(ame, &QAtemMixEffect::transitionPreviewChanged, [id, this](quint8 me, bool state) { this->atmTransitionPreviewChanged(id, me, state); });
+		connect(ame, &QAtemMixEffect::fadeToBlackChanged, [id, this](quint8 me, bool fading, bool enabled) { this->atmFadeToBlackChanged(id, me, fading, enabled); });
+		connect(ame, &QAtemMixEffect::currentTransitionStyleChanged, [id, this](quint8 me, quint8 style) { this->atmCurrentTransitionStyleChanged(id, me, style); });
+		connect(ame, &QAtemMixEffect::keyersOnCurrentTransitionChanged, [id, this](quint8 me, quint8 keyers) { this->atmKeyersOnCurrentTransitionChanged(id, me, keyers); });
+		connect(ame, &QAtemMixEffect::upstreamKeyOnAirChanged, [id, this](quint8 me, quint8 keyer, bool state) { this->atmUpstreamKeyOnAirChanged(id, me, keyer, state); });
 	}
 
 	incrementalProgress();

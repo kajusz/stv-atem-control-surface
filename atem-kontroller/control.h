@@ -29,12 +29,9 @@ public slots:
 	// slots for the kdevice class
 	void devConnected(void); // event, kontroller was connected
 	void devDisconnected(void); // event, kontroller was disconnected
-	void devBtnCommandKeyDown(uint8_t keyNum);
 	void devBtnCommandKeyUp(uint8_t keyNum);
-	void devBtnGroupKeyDown(uint8_t gpId, uint8_t keyNum);
 	void devBtnGroupKeyUp(uint8_t gpId, uint8_t keyNum);
 	void devTBarMove(uint16_t pos);
-	void devEncMove(uint8_t encId, int8_t data);
 	void devJoystickMove(joystick_t data);
 
 	// slots for the qatemcontrol class

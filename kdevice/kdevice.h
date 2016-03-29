@@ -96,6 +96,8 @@ struct joystick_t
 
 #include "kdevice_global.h"
 
+#define KDEVICE_VERSION "2.30"
+
 class KDEVICESHARED_EXPORT kDevice : public QObject
 {
 	Q_OBJECT

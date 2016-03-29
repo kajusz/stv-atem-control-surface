@@ -20,6 +20,7 @@ public:
 	~MainWindow(void);
 
 	void linkDev(std::shared_ptr<kDevice> devc);
+	void registerAtem(atemPtr atem); // add atem to the vector
 
 signals:
 	void ctlReconnect(void);
@@ -36,10 +37,15 @@ public slots:
 	void ctlReady(void);
 	void ctlStop(QString reason);
 
+private slots:
+	void updateTime();
+
 private:
 	// qt designer object
 	Ui::MainWindow *ui;
 
+	// storage container for atem objects
+	atemVec bmd;
 	// reference to the kontroller
 	std::shared_ptr<kDevice> dev;
 };

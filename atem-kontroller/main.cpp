@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
 	{
 		atemPtr atem(new QAtemConnection);
 		c.registerAtem(atem);
+		w.registerAtem(atem);
 	}
 
 //	void sigBtnKeyboardKeyDown(uint8_t rawCode);

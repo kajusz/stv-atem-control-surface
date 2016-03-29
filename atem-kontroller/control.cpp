@@ -43,15 +43,15 @@ void control::doTasks(void)
 	// connect to atems
 	QSettings settings;
 	totalTasks = 1 + settings.value(QString("atem/count"), 1).toInt();
-	int x = 0;
-	for (atemVec::const_iterator it = bmd.begin(); it != bmd.end(); ++it, ++x)
+	int id = 0;
+	for (atemVec::const_iterator it = bmd.begin(); it != bmd.end(); ++it, ++id)
 	{
 		atemPtr ti = *it;
 
-		connect(ti.get(), &QAtemConnection::connected, [id, this]() { this->atmConnected(x); });
-		connect(ti.get(), &QAtemConnection::disconnected, [id, this]() { this->atmDisconnected(x); });
+		connect(ti.get(), &QAtemConnection::connected, [id, this]() { this->atmConnected(id); });
+		connect(ti.get(), &QAtemConnection::disconnected, [id, this]() { this->atmDisconnected(id); });
 
-		ti->connectToSwitcher(QHostAddress(settings.value(QString("atem/%1/ip").arg(x), "192.168.10.240").toString()));
+		ti->connectToSwitcher(QHostAddress(settings.value(QString("atem/%1/ip").arg(id), "192.168.10.240").toString()));
 		if (ti->isConnected())
 			incrementalProgress();
 	}

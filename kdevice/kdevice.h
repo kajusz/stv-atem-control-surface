@@ -96,7 +96,7 @@ struct joystick_t
 
 #include "kdevice_global.h"
 
-#define KDEVICE_VERSION "2.30"
+#define KDEVICE_VERSION "2.31"
 
 class KDEVICESHARED_EXPORT kDevice : public QObject
 {
@@ -120,6 +120,7 @@ public:
 public slots:
 	void setLed(const uint8_t& led, const rgbf& colour) { tLed(led, colour); }
 	void setLeds(const uint8_t& start, const uint8_t& end, const rgbf& colour);
+	void setLedsBtnGp(const uint8_t& btnGp, const rgbf& colour);
 
 signals:
 	void sigInfo(int8_t id, QString what); // used for spittion out errors, @param - id number, @param - text

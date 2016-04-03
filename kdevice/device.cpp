@@ -172,6 +172,25 @@ void kDevice::setLeds(const uint8_t& start, const uint8_t& end, const rgbf& colo
 		tLed(i, colour);
 }
 
+void kDevice::setLedsBtnGp(const uint8_t& btnGp, const rgbf& colour)
+{
+	switch (btnGp)
+	{
+		case 2:
+			dev->setLeds(92, 99, colour);
+			dev->setLeds(115, 118, colour);
+			break;
+		case 1:
+			dev->setLeds(84, 91, colour);
+			dev->setLeds(107, 110, colour);
+			break;
+		case 0:
+			dev->setLeds(76, 83, colour);
+			dev->setLeds(100, 103, colour);
+			break;
+	}
+}
+
 void kDevice::checkSerialData()
 {
 	size_t num = 0;
@@ -515,20 +534,14 @@ void kDevice::btnCommandKey(uint8_t keyNum, keyState state)
 void kDevice::btnGroupKey(uint8_t row, uint8_t keyNum, keyState state)
 {
 	if (state == KEYDOWN && keyNum == 11)
-	{
 		modifierKey[row] = true;
-		return;
-	}
 	else if (state == KEYUP && keyNum == 11)
-	{
 		modifierKey[row] = false;
-		return;
-	}
 
 	uint8_t ret;
 
 	if (modifierKey[row] == true)
-		ret = keyNum + 11;
+		ret = keyNum + 12;
 	else
 		ret = keyNum;
 

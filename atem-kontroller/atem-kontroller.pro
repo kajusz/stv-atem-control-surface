@@ -12,7 +12,9 @@ SOURCES += \
 
 HEADERS += mainwindow.h \
 		control.h \
-		libatem.h
+		libatem.h \
+		translate.h \
+		types.h
 
 FORMS += mainwindow.ui
 

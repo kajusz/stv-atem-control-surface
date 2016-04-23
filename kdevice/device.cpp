@@ -92,6 +92,9 @@ void kDevice::begin(void)
 	// check if we opened the port successfully
 	if (port->isOpen())
 	{
+		// enable serial
+		msgWrite(28, 127, 191)
+
 		mTimer->start(10);
 
 		// get firmware version, this is part of initialisation
@@ -110,11 +113,17 @@ void kDevice::reset(void)
 	// resetting is pointless if the port is not open
 	assert(port->isOpen());
 
+	// enable serial
+	msgWrite(28, 127, 190)
+
 	// send a reset command to the device
 	msgWrite(27, 127, 191)
 
 	// flush the socket (just in case)
 	trycatch(port->flush())
+
+	// disable serial
+	msgWrite(28, 127, 191)
 
 	mTimer->start(10);
 }
@@ -126,6 +135,9 @@ void kDevice::close(void)
 	{
 		// clear leds
 		msgWrite(17, 95, 191)
+
+		// disable serial
+		msgWrite(28, 127, 190)
 
 		// send a reset command to the device
 		msgWrite(27, 127, 191)
@@ -177,16 +189,16 @@ void kDevice::setLedsBtnGp(const uint8_t& btnGp, const rgbf& colour)
 	switch (btnGp)
 	{
 		case 2:
-			dev->setLeds(92, 99, colour);
-			dev->setLeds(115, 118, colour);
+			setLeds(92, 99, colour);
+			setLeds(115, 118, colour);
 			break;
 		case 1:
-			dev->setLeds(84, 91, colour);
-			dev->setLeds(107, 110, colour);
+			setLeds(84, 91, colour);
+			setLeds(107, 110, colour);
 			break;
 		case 0:
-			dev->setLeds(76, 83, colour);
-			dev->setLeds(100, 103, colour);
+			setLeds(76, 83, colour);
+			setLeds(100, 103, colour);
 			break;
 	}
 }

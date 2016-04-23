@@ -35,7 +35,7 @@ struct rgbf
             RGBQUICK(0, 255, 0)
             break;
         case ORANGE:
-            RGBQUICK(255, 165, 0)
+			RGBQUICK(255, 255, 0)
             break;
         }
     }
@@ -63,7 +63,7 @@ struct rgbf
 			RGBQUICK(0, 255, 0)
 			break;
 		case ORANGE:
-			RGBQUICK(255, 165, 0)
+			RGBQUICK(255, 255, 0)
 			break;
 		}
 	}

@@ -118,7 +118,7 @@ public:
 	const std::string getVersion(void) { return version; }
 
 public slots:
-	void setLed(const uint8_t& led, const rgbf& colour) { tLed(led, colour); }
+	void setLed(const uint8_t& led, const rgbf& colour) { assert(led < 144); tLed(led, colour); }
 	void setLeds(const uint8_t& start, const uint8_t& end, const rgbf& colour);
 	void setLedsBtnGp(const uint8_t& btnGp, const rgbf& colour);
 

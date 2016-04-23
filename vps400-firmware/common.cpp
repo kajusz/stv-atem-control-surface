@@ -48,7 +48,22 @@ void VPS::doTasks()
 					}
 					case 11:
 					{
+						rxBufferCE = -1;
+						txBufferCE = -1;
+
 						initIo();
+						allLedsOff();
+
+						for (int i = 0; i < TOTALSWITCHES; i++)
+						{
+							debounceBuffer[i].state = KEYUP;
+							debounceBuffer[i].time = 0;
+						}
+						break;
+					}
+					case 12:
+					{
+						transmit = bitRead(b, 0);
 						break;
 					}
 					case 13:
@@ -85,13 +100,15 @@ void VPS::doTasks()
 
 void VPS::sendData(void)
 {
-	if (txBufferCE > -1)
+	if (txBufferCE > -1 && transmit)
 	{
 		for (uint8_t i = 0; i <= txBufferCE; i++)
 			dataTxFn(txBuffer[i].p1, txBuffer[i].p2, txBuffer[i].p3);
 
 		txBufferCE = -1;
 	}
+	else if (!transmit)
+		txBufferCE = -1;
 }
 
 void VPS::doSpecials(const bool& xord, const uint8_t& bitMask)

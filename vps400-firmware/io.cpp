@@ -3,7 +3,19 @@
 #ifndef OPTIMISED
 #include <Arduino.h>
 
-
+VPS::VPS()
+{
+	transmit = false;
+	keyPinsStateChanged = true;
+	currentSpecial = 0;
+	tBarPosition = 0;
+	encState[0] = 3;
+	encState[1] = 3;
+	encState[2] = 3;
+	encState[3] = 3;
+	rxBufferCE = -1;
+	txBufferCE = -1;
+}
 
 void VPS::initIo(void)
 {

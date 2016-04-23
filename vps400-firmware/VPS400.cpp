@@ -14,18 +14,18 @@ VPS vps;
 
 void setup()
 {
-// Library
-	vps.initIo();
-//	analogReference(EXTERNAL);
-
-	vps.registerSerialHandler(&txData);
-
 // Comms
 	Serial.begin(115200);
 
 // Debug
 	Serial1.begin(115200);
 	Serial1.println("Setup done");
+
+// Library
+	vps.initIo();
+//	analogReference(EXTERNAL);
+
+	vps.registerSerialHandler(&txData);
 }
 
 void loop()
@@ -84,7 +84,7 @@ void txData(const uint8_t& p1, const uint8_t& p2, const uint8_t& p3)
 	6: adc
 	...
 	11: reset
-	...
+	12: connected
 	13: config
 	14: version
 	15: version
@@ -102,6 +102,7 @@ void txData(const uint8_t& p1, const uint8_t& p2, const uint8_t& p3)
 	|0|0|0|1|0 0 0 1|0 1|0|state| > |1 0|  ledNum   |
 	|0|0|0|1|0 1 0 1|0 1|  dur  | > |1 0|   freq    |
 	|0|0|0|1|1 0 1 1|0 1|1 1 1 1|1 1|1 0|1 1 1 1 1 1| reset
+	|0|0|0|1|1 1 0 0|0 1|1 1 1 1|1 1|1 0|1 1 1 1 1 x| connect (enable transmitting)
 	|0|0|0|1|1 1 0 1|0 1|0 r 0 x| > |1 0|  special  | r = reset config. x = xor
 	|0|0|0|1|1 1 1 1|0 1|0 0 0 0|0 0|1 0|0 0 0 0 0 0| get version
 	*/
@@ -154,6 +155,16 @@ void debugOut(uint8_t cmd, uint8_t a, uint8_t b, bool rx)
 			if (a == 15 && b == 255)
 			{
 				Serial1.print("Reset request");
+				break;
+			}
+		case 12:
+			{
+				Serial1.print("Serial: ");
+				if (bitRead(b, 0))
+					Serial1.print("enable");
+				else
+					Serial1.print("disable");
+				
 				break;
 			}
 		case 13://special

@@ -1,7 +1,9 @@
 #include "VPS400.h"
+#include <Arduino.h>
 
 void VPS::allLedsOff(void)
 {
+			Serial1.println("alo");
 	// KEY Card
 	for (uint8_t k = 0; k < 16; k++)
 		ledBuffer[k] = 255;
@@ -41,6 +43,7 @@ void VPS::setLed(const uint8_t& state, const uint8_t& ledNum)
 			allLedsOff();
 		else
 		{
+			Serial1.println("naughty");
 			prepareLedsIo(0);
 			uint8_t singleState = 255 * (~bitRead(state, 1) && bitRead(state, 0));
 			uint8_t dualState = (state - 4) * 85;

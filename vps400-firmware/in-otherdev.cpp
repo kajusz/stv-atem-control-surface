@@ -4,12 +4,13 @@
 void VPS::detectFaderBar(void)
 {
 	uint16_t tBar = adcRead(tBarPotPin);
-	if (tBar < 371)
-		tBar = 371;
-	else if (tBar > 669)
-		tBar = 669;
 
-	tBar = (tBar - 371) * 0.8558;
+	if (tBar < 394)
+		tBar = 394;
+	else if (tBar > 664)
+		tBar = 664;
+
+	tBar = (tBar - 394) * 0.9445;
 
 	if (tBar != tBarPosition)
 	{

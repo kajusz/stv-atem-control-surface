@@ -117,19 +117,7 @@ protected:
 
 public:
 // Common
-	VPS()
-	{
-		keyPinsStateChanged = true;
-		currentSpecial = 0;
-		tBarPosition = 0;
-		encState[0] = 3;
-		encState[1] = 3;
-		encState[2] = 3;
-		encState[3] = 3;
-		rxBufferCE = -1;
-		txBufferCE = -1;
-	}
-
+	VPS();
 	~VPS() {}
 
 // Input / Output
@@ -191,6 +179,7 @@ private:
 	void keysGridOutputDisable(const uint8_t& ic);
 protected:
 // Input / Output
+	bool transmit;
 	bool keyPinsStateChanged; // reduce bus i/o state changes
 	uint16_t currentSpecial; // bit masked special features
 	/* Bit: 0: All Off, 1: Test Mode, 2: Don't buffer keys */
